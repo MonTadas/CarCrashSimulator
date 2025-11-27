@@ -1,0 +1,23 @@
+Player controls traffic lights
+- lights change colours when clicked on
+- cars spawn randomly and drive (later in random directions)
+- loss if traffic jam or crash occurs
+- win if certain time is reached without loss conditions
+Additions: different intersection levels, air conditions, improved driving AI
+Since the assignment is vague, AI will be simple - just driving forward, later will do turns.
+
+Score - count of seconds passed. Win - 120 points
+Spawn rate: TBD
+Traffic jam: 10 cars in lane
+
+Operations:
+1. Add Car to lane list
+1.1. if lane list size < 3, spawn Car, else wait until spawned cars move out (spawn 3rd car) every time the first one leaves
+2. Once Car is spawned, check distance to the car before it
+2.1. move Car if distance allows it
+3. Once traffic light turns green, all spawned cars behind it move
+3.1. Once the car reaches traffic light, PathTransition changes, car is removed from the lane
+4. Car object is on its own during drive through intersection
+5. At the end of intersection crossing the car joins exit lane and either:
+5.1. Car reaches a car that's waiting and stops behind it
+5.2. car moves until end of PathTransition and despawns

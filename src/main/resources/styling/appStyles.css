@@ -1,0 +1,29 @@
+.green-light{
+    -fx-background-color: #00cf00;
+}
+
+.darker-green-light{
+    -fx-background-color: #002d00;
+}
+
+.yellow-light{
+    -fx-background-color: yellow;
+}
+
+.red-light{
+    -fx-background-color: red;
+}
+
+.light-text-style{
+    -fx-font-family: FreeSerif;
+    -fx-font-size: 13px;
+    -fx-text-fill: black;
+}
+
+.game-status{
+    -fx-color-label-visible: black;
+}
+
+.game-over{
+    -fx-color-label-visible: red;
+}
