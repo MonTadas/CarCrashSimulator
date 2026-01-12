@@ -4,6 +4,7 @@ module com.carcrashsimulator {
     requires static lombok;
     requires java.desktop;
     requires javafx.base;
+    requires javafx.graphics;
 
     opens com.carcrashsimulator to javafx.fxml;
     exports com.carcrashsimulator;

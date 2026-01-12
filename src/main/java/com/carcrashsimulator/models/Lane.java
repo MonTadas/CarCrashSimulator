@@ -16,6 +16,13 @@ public class Lane {
     private CarState laneState;
     private final Point2D stopLine;
 
+    /**
+     * Exit lane creation
+     * @param direction
+     * @param laneDirections
+     * @param stopLine
+     * @param laneState
+     */
     public Lane(Directions direction, Set<LaneDirection> laneDirections, Point2D stopLine, CarState laneState) {
         this.direction = direction;
         this.laneDirections = laneDirections;
@@ -24,6 +31,13 @@ public class Lane {
         carsInLane = new ArrayList<>();
     }
 
+    /**
+     * Created for traffic light
+     * @param direction
+     * @param laneDirections
+     * @param stopLine
+     * @param lightColour
+     */
     public Lane(Directions direction, Set<LaneDirection> laneDirections, Point2D stopLine, String lightColour) {
         this.direction = direction;
         this.laneDirections = laneDirections;
@@ -39,7 +53,7 @@ public class Lane {
 
     public void changeLaneState(String lightColourClass) {
         switch (lightColourClass) {
-            case "red-light":
+            case "red-light", "yellow-light":
                 laneState = CarState.WAITING;
                 break;
             case "green-light":
@@ -52,22 +66,25 @@ public class Lane {
 
     public void laneCheck(Car car) {
         int carIndex = carsInLane.indexOf(car);
+        if(carIndex == -1) {
+            throw new IndexOutOfBoundsException("Car not found");
+        }
         if (carIndex > 0 && ! laneDirections.contains(LaneDirection.EXIT)) {
             if (getProximity(car, carsInLane.get(carIndex - 1)) < 40) {
-                car.pauseCar();
+                car.changeStateToWaiting();
             } else {
-                car.startCar();
+                car.changeStateToDriving();
             }
         } else if (carIndex > 0 && carsInLane.size() < carIndex + 1 && laneDirections.contains(LaneDirection.EXIT)) {
             if (getProximity(car, carsInLane.get(carIndex + 1)) < 40) {
-                car.pauseCar();
+                car.changeStateToWaiting();
             } else {
-                car.startCar();
+                car.changeStateToDriving();
             }
         } else if (carIndex == 0 && getProximityToLine(car, stopLine) < 15 && laneState == CarState.WAITING) {
-            car.pauseCar();
+            car.changeStateToWaiting();
         } else {
-            car.startCar();
+            car.changeStateToDriving();
         }
     }
 

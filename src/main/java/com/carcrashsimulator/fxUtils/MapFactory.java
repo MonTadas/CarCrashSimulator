@@ -3,6 +3,7 @@ package com.carcrashsimulator.fxUtils;
 import com.carcrashsimulator.fxControllers.GameMap;
 import com.carcrashsimulator.models.Directions;
 import com.carcrashsimulator.models.LaneDirection;
+import com.carcrashsimulator.models.TrafficLight;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,7 +36,7 @@ public class MapFactory {
     }
 
     public IntersectionTemplate developmentIntersection(GameMap map) {
-        Map<String, Button> trafficLights = Map.of("btnSLight", generateTrafficLight(" S ", "btnSLight", 415, 440, "green-light", map));
+        Map<String, TrafficLight> trafficLights = Map.of("btnSLight", generateTrafficLight(" S ", "btnSLight", 415, 440, "green-light", map));
         Map<Directions, Label> exitLabels = new HashMap<>();
         List<CarSpawn> spawnPoints = new ArrayList<>();
         List<CubicCurveTo> allCubicCurves = new ArrayList<>();
@@ -55,7 +56,7 @@ public class MapFactory {
     }
 
     public IntersectionTemplate basicIntersection(GameMap map) {
-        Map<String, Button> trafficLights = new HashMap<>();
+        Map<String, TrafficLight> trafficLights = new HashMap<>();
         Map<Directions, Label> exitLabels = new HashMap<>();
         List<CarSpawn> spawnPoints = new ArrayList<>();
         Map<Pair<Directions, LaneDirection>, Point2D> stopLines = new HashMap<>();
@@ -96,7 +97,7 @@ public class MapFactory {
     }
 
     public IntersectionTemplate intersectionWithLeftLanes(GameMap map) {
-        Map<String, Button> trafficLights = new HashMap<>();
+        Map<String, TrafficLight> trafficLights = new HashMap<>();
         Map<Directions, Label> exitLabels = new HashMap<>();
         List<CarSpawn> spawnPoints = new ArrayList<>();
         Map<Pair<Directions, LaneDirection>, Point2D> stopLines = new HashMap<>();
@@ -121,18 +122,18 @@ public class MapFactory {
         return new IntersectionTemplate(trafficLights, exitLabels, spawnPoints, stopLines);
     }
 
-    private static Button generateTrafficLight(String name, String id, double x, double y, String classCSS, GameMap map) {
-        Button trafficLight = new Button(name);
-        trafficLight.setId(id);
-        trafficLight.setLayoutX(x);
-        trafficLight.setLayoutY(y);
-        trafficLight.setMinWidth(30);
-        trafficLight.setMinHeight(25);
-        trafficLight.setOnAction(map::switchTrafficLights);
-        trafficLight.getStyleClass().add("light-text-style");
-        trafficLight.getStyleClass().add(classCSS);
-        trafficLight.toFront();
-        return trafficLight;
+    private static TrafficLight generateTrafficLight(String name, String id, double x, double y, String classCSS, GameMap map) {
+        Button trafficLightSprite = new Button(name);
+        trafficLightSprite.setId(id);
+        trafficLightSprite.setLayoutX(x);
+        trafficLightSprite.setLayoutY(y);
+        trafficLightSprite.setMinWidth(30);
+        trafficLightSprite.setMinHeight(25);
+        trafficLightSprite.setOnAction(map::switchTrafficLights);
+        trafficLightSprite.getStyleClass().add("light-text-style");
+        trafficLightSprite.getStyleClass().add(classCSS);
+        trafficLightSprite.toFront();
+        return new TrafficLight(trafficLightSprite);
     }
 
     private static Label generateExitLabel(String id, int x, int y){

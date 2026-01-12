@@ -2,8 +2,6 @@ package com.carcrashsimulator.fxControllers;
 
 import com.carcrashsimulator.fxUtils.*;
 import com.carcrashsimulator.models.*;
-import com.carcrashsimulator.fxUtils.*;
-import com.carcrashsimulator.models.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
@@ -21,11 +19,15 @@ import java.net.URL;
 import java.util.*;
 
 public class GameMap implements Initializable {
-    public Button btnPause;
-    public Button btnRestart;
-    public Label labelScore;
-    public Label labelGameStatus;
-    public AnchorPane anchorTheBase;
+    @FXML
+    private Button btnPause;
+    @FXML
+    private Label labelScore;
+    @FXML
+    private Label labelGameStatus;
+    @FXML
+    @Getter
+    private AnchorPane anchorTheBase;
 
     private int score;
     private int scoreDecimator;
@@ -34,6 +36,7 @@ public class GameMap implements Initializable {
     private MapFactory mapFactory;
     @Getter
     private IntersectionTemplate map;
+    @Getter
     private GameStatus gameStatus;
     private MoveOutDirection carMoveOutDirection;
     private List<Button> buttonsPlayingAnimations;
@@ -41,33 +44,36 @@ public class GameMap implements Initializable {
     @Getter
     private List<Car> carsInIntersection;
     private Map<Directions, Lane> exitLanes;
+    private List<IReactToStatus> reactToStatus;
 
-    Timeline gameFrames;
+    private Timeline gameFrames;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        reactToStatus = new ArrayList<>();
         buttonsPlayingAnimations = new ArrayList<>();
         cars = new ArrayList<>();
         carsInIntersection = new ArrayList<>();
         mapFactory = new MapFactory();
         exitLanes = new HashMap<>();
 
-        gameFrames = new Timeline(new KeyFrame(Duration.millis(1000 / 60.), e -> runTick()));
+        double framerate = 60;
+        gameFrames = new Timeline(new KeyFrame(Duration.millis(1000 / framerate), e -> runTick()));
         gameFrames.setCycleCount(Timeline.INDEFINITE);
 
         restartGame();
     }
 
     public int getAndIncrementLatestCarId() {
-        return ++ carIds;
+        return ++carIds;
     }
 
     public void addLanesByTrafficLights(List<String> trLightIds, List<LaneDirection> laneDirections) {
-        for (String direction : trLightIds) {
-            if (map.getTrafficLights().containsKey(direction)) {
-                map.getLanes().put(direction, new Lane(Directions.fromLightId(direction), new HashSet<>(laneDirections),
-                        map.getStopLines().get(new Pair<>(Directions.fromLightId(direction), laneDirections.getFirst())),
-                        map.getTrafficLights().get(direction).getStyleClass().getLast()));
+        for (String lightName : map.getTrafficLights().keySet()) {
+            if (trLightIds.contains(lightName)) {
+                map.getLanes().put(lightName, new Lane(Directions.fromLightId(lightName), new HashSet<>(laneDirections),
+                        map.getStopLines().get(new Pair<>(Directions.fromLightId(lightName), laneDirections.getFirst())),
+                        map.getTrafficLights().get(lightName).getSprite().getStyleClass().getLast()));
             }
         }
     }
@@ -83,6 +89,7 @@ public class GameMap implements Initializable {
                 for (CarSpawn spawn : map.getSpawnPoints()) {
                     if ((int) (Math.random() * 9) > 3) {
                         cars.add(spawn.SpawnCar(this, new Pair<>(spawn.getDirection(), LaneDirection.F)));
+                        reactToStatus.add(cars.getLast());
                         map.carSpawns(cars.getLast());
                     }
                 }
@@ -90,8 +97,8 @@ public class GameMap implements Initializable {
                 for (Directions direction : exitLanes.keySet()) {
                     map.getExitLabels().get(direction).setText(exitLanes.get(direction).getCarsInLane().size() + "");
                 }
-                for (String lightId : map.getTrafficLights().keySet()) {
-                    map.getTrafficLights().get(lightId).setText(map.getLanes().get(lightId).getCarsInLane().size() + "");
+                for (TrafficLight light : map.getTrafficLights().values()) {
+                    light.getSprite().setText(map.getLanes().get(light.getName()).getCarsInLane().size() + "");
                 }
             }
             if (switchCountdown == 10) {
@@ -102,11 +109,12 @@ public class GameMap implements Initializable {
                 if (lane.getLaneState() == CarState.WAITING && lane.getCarsInLane().size() >= 10) {
                     gameStatus = GameStatus.OVER;
                     labelGameStatus.setText("Game Over");
-                    gameFrames.stop();
+                    allReactToStatus();
                 }
                 for (Car car : lane.getCarsInLane()) {
-                    if (lane.getCarsInLane().indexOf(car) <= 4 && ! car.isVisible()) {
-                        car.makeCarVisible(this);
+                    if (lane.getCarsInLane().indexOf(car) <= 4 && !car.isVisible()) {
+                        anchorTheBase.getChildren().add(car.getSprite());
+                        car.markCarVisible();
                     }
                     lane.laneCheck(car);
                 }
@@ -125,93 +133,37 @@ public class GameMap implements Initializable {
                     }
                 }
             }
-            if(score==120){
+            if (score == 120) {
                 gameStatus = GameStatus.OVER;
                 labelGameStatus.setText("Game Won!");
+                allReactToStatus();
             }
+            allReactToStatus();
         }
-    }
-
-    public void changeColourToRed(Button btn) {
-        Timeline tl = new Timeline(
-                new KeyFrame(Duration.seconds(0.5), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("darker-green-light");
-                }),
-                new KeyFrame(Duration.seconds(1), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("green-light");
-                }),
-                new KeyFrame(Duration.seconds(1.5), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("darker-green-light");
-                }),
-                new KeyFrame(Duration.seconds(2), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("green-light");
-                }),
-                new KeyFrame(Duration.seconds(2.5), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("darker-green-light");
-                }),
-                new KeyFrame(Duration.seconds(3), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("yellow-light");
-                }),
-                new KeyFrame(Duration.seconds(5), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("red-light");
-                    map.getLanes().get(btn.getId()).changeLaneState(btn.getStyleClass().getLast());
-                    Lane lane = map.getLanes().get(btn.getId());
-                    for (Car car : lane.getCarsInLane()) {
-                        lane.laneCheck(car);
-                    }
-                })
-        );
-        tl.play();
-    }
-
-    public void changeColourToGreen(Button btn) {
-        Timeline tl = new Timeline(
-                new KeyFrame(Duration.seconds(0.5), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("yellow-light");
-                }),
-                new KeyFrame(Duration.seconds(2), e -> {
-                    btn.getStyleClass().remove(2);
-                    btn.getStyleClass().add("green-light");
-                    Lane lane = map.getLanes().get(btn.getId());
-                    lane.changeLaneState(btn.getStyleClass().getLast());
-                    if (! lane.getCarsInLane().isEmpty()) {
-                        lane.getCarsInLane().getFirst().startCar();
-                    }
-                })
-        );
-        tl.play();
     }
 
     private void carsExit() {
         Car car;
         switch (carMoveOutDirection) {
             case HORIZONTAL:
-                if (! exitLanes.get(Directions.E).getCarsInLane().isEmpty()) {
+                if (!exitLanes.get(Directions.E).getCarsInLane().isEmpty()) {
                     car = exitLanes.get(Directions.E).getCarsInLane().getFirst();
                     anchorTheBase.getChildren().remove(car.getSprite());
                     exitLanes.get(Directions.E).getCarsInLane().remove(car);
                 }
-                if (! exitLanes.get(Directions.W).getCarsInLane().isEmpty()) {
+                if (!exitLanes.get(Directions.W).getCarsInLane().isEmpty()) {
                     car = exitLanes.get(Directions.W).getCarsInLane().getFirst();
                     anchorTheBase.getChildren().remove(car.getSprite());
                     exitLanes.get(Directions.W).getCarsInLane().remove(car);
                 }
                 break;
             case VERTICAL:
-                if (! exitLanes.get(Directions.N).getCarsInLane().isEmpty()) {
+                if (!exitLanes.get(Directions.N).getCarsInLane().isEmpty()) {
                     car = exitLanes.get(Directions.N).getCarsInLane().getFirst();
                     anchorTheBase.getChildren().remove(car.getSprite());
                     exitLanes.get(Directions.N).getCarsInLane().remove(car);
                 }
-                if (! exitLanes.get(Directions.S).getCarsInLane().isEmpty()) {
+                if (!exitLanes.get(Directions.S).getCarsInLane().isEmpty()) {
                     car = exitLanes.get(Directions.S).getCarsInLane().getFirst();
                     anchorTheBase.getChildren().remove(car.getSprite());
                     exitLanes.get(Directions.S).getCarsInLane().remove(car);
@@ -231,14 +183,14 @@ public class GameMap implements Initializable {
     @FXML
     public void switchTrafficLights(ActionEvent actionEvent) {
         Button caller = (Button) actionEvent.getSource();
-        if (! buttonsPlayingAnimations.contains(caller) && gameStatus == GameStatus.RUNNING) {
+        if (!buttonsPlayingAnimations.contains(caller) && gameStatus == GameStatus.RUNNING) {
             buttonsPlayingAnimations.add(caller);
             switch (caller.getStyleClass().get(2)) {
                 case "green-light":
-                    changeColourToRed(caller);
+                    map.getTrafficLights().get(caller.getId()).changeColourToRed(caller, this);
                     break;
                 case "red-light":
-                    changeColourToGreen(caller);
+                    map.getTrafficLights().get(caller.getId()).changeColourToGreen(caller, this);
                     break;
             }
             buttonsPlayingAnimations.remove(caller);
@@ -247,24 +199,37 @@ public class GameMap implements Initializable {
 
     public void pauseTrafficAction() {
         if (gameStatus == GameStatus.PAUSED) {
-            btnPause.setText("Pause");
             gameStatus = GameStatus.RUNNING;
-            gameFrames.play();
-            for (Car car : cars) {
-                car.startCar();
-            }
-            labelGameStatus.setText("Running");
         } else if (gameStatus == GameStatus.RUNNING) {
-            btnPause.setText("Resume");
             gameStatus = GameStatus.PAUSED;
-            gameFrames.pause();
-            for (Car car : cars) {
-                car.pauseCar();
-            }
+        }
+        allReactToStatus();
+    }
+
+    private void allReactToStatus() {
+        for (IReactToStatus animatedElement : reactToStatus) {
+            animatedElement.reactToGameStatus(this.gameStatus);
+        }
+        switch (gameStatus) {
+            case RUNNING:
+                btnPause.setText("Pause");
+                gameFrames.play();
+                labelGameStatus.setText("Running");
+                break;
+            case PAUSED:
+                btnPause.setText("Resume");
+                gameFrames.pause();
+                break;
+            case OVER:
+                btnPause.setText("Resume");
+                gameFrames.stop();
+                labelGameStatus.setText("Game Over");
+                break;
         }
     }
 
     public void restartGame() {
+        reactToStatus.clear();
         carIds = 0;
         score = 0;
         scoreDecimator = 0;
@@ -288,16 +253,15 @@ public class GameMap implements Initializable {
             if (l.getLaneDirections().contains(LaneDirection.EXIT))
                 exitLanes.put(l.getDirection(), l);
         });
-        for (Label label : map.getExitLabels().values()) {
-            anchorTheBase.getChildren().remove(label);
-        }
-        for (Label label : map.getExitLabels().values()) {
-            anchorTheBase.getChildren().add(label);
-        }
-        anchorTheBase.getChildren().addAll(map.getTrafficLights().values());
+        //useless for one map implementation
+        anchorTheBase.getChildren().removeAll(map.getExitLabels().values());
+        anchorTheBase.getChildren().addAll(map.getExitLabels().values());
+        map.getTrafficLights().values().forEach(trafficLight -> {
+            anchorTheBase.getChildren().add(trafficLight.getSprite());
+            reactToStatus.add(trafficLight);
+        });
         gameStatus = GameStatus.PAUSED;
         labelGameStatus.setText("Stopped");
         btnPause.setText("Resume");
     }
-
 }

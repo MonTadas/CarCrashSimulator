@@ -13,7 +13,7 @@ public class HelloApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("GameMap.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         scene.getStylesheets().add(getClass().getResource("/styling/appStyles.css").toExternalForm());
-        stage.setTitle("Hello!");
+        stage.setTitle("Car Crash Sim");
         stage.setScene(scene);
         stage.show();
     }

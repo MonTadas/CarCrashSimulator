@@ -15,13 +15,13 @@ import java.util.Set;
 
 @Getter
 public class IntersectionTemplate {
-    private final Map<String, Button> trafficLights;
+    private final Map<String, TrafficLight> trafficLights;
     private final Map<Directions, Label> exitLabels;
     private final List<CarSpawn> spawnPoints;
     private Map<String, Lane> lanes;
     private final Map<Pair<Directions, LaneDirection>, Point2D> stopLines;
 
-    public IntersectionTemplate(Map<String, Button> trafficLights, Map<Directions, Label> exitLabels, List<CarSpawn> spawnPoints, Map<Pair<Directions, LaneDirection>, Point2D> stopPoints) {
+    public IntersectionTemplate(Map<String, TrafficLight> trafficLights, Map<Directions, Label> exitLabels, List<CarSpawn> spawnPoints, Map<Pair<Directions, LaneDirection>, Point2D> stopPoints) {
         this.trafficLights = trafficLights;
         this.exitLabels = exitLabels;
         this.spawnPoints = spawnPoints;
@@ -35,7 +35,7 @@ public class IntersectionTemplate {
 
     public void carSpawns(Car car) {
         Pair<Directions, LaneDirection> laneKeyMaterial = car.getStartingLane();
-        StringBuilder lightName = new StringBuilder("btnlight");
+        StringBuilder lightName = new StringBuilder("btn"+"light");
         lightName.insert(3, laneKeyMaterial.getKey().toString());
 
         if (laneKeyMaterial.getValue() == LaneDirection.R || laneKeyMaterial.getValue() == LaneDirection.L) {
